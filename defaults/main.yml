@@ -1,2 +1,8 @@
 ---
-# defaults file for ansible-role-wireguard
+wireguard_service_state: started
+wireguard_service_enabled: true
+wireguard_address: 192.168.10.1/24
+wireguard_port: 51820
+wireguard_server: false
+
+wireguard_peers: []

@@ -1,2 +1,45 @@
 ---
-# tasks file for ansible-role-wireguard
+- name: Add specified repository into sources list
+  apt_repository:
+    repo: deb http://deb.debian.org/debian {{ ansible_distribution_release | lower }}-backports main
+    state: present
+  when: ansible_distribution == 'Debian'
+
+- name: Install wireguard
+  package:
+    name: wireguard
+    state: present
+
+- name: Create a etc directory if it does not exist
+  file:
+    path: /etc/wireguard
+    state: directory
+    mode: '0700'
+
+- name: Check private key is exists
+  stat:
+    path: /etc/wireguard/privatekey
+  register: stat_priv_key
+
+- include_tasks: genkey.yml
+  when: not stat_priv_key.stat.exists
+
+- name: slurp resolv.conf
+  slurp:
+    src: /etc/wireguard/privatekey
+  register: slurp_priv_key
+
+- name:
+  template:
+    src: wg0.conf.j2
+    dest: /etc/wireguard/wg0.conf
+    mode: '0600'
+  vars:
+    wireguard_private_key: "{{ priv_key.stdout }}"
+  notify: restart wireguard
+
+- name: Start service httpd, if not started
+  service:
+    name: wg-quick@wg0
+    state: "{{ wireguard_service_state }}"
+    enabled: "{{ wireguard_service_enabled }}"

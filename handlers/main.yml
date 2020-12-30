@@ -1,2 +1,5 @@
 ---
-# handlers file for ansible-role-wireguard
+- name: restart wireguard
+  service:
+    name: wg-quick@wg0
+    state: restarted

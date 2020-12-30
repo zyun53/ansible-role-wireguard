@@ -1,0 +1,22 @@
+---
+- name: exec genkey
+  command: wg genkey
+  register: priv_key
+
+- name: Ensure SELinux is set to enforcing mode
+  copy:
+    dest: /etc/wireguard/privatekey
+    content: "{{ priv_key.stdout }}"
+    mode: '0600'
+
+- name: exec pubkey
+  command: wg pubkey
+  register: pub_key
+  args:
+    stdin: "{{ priv_key.stdout | trim }}"
+
+- name: Ensure SELinux is set to enforcing mode
+  copy:
+    dest: /etc/wireguard/publickey
+    content: "{{ pub_key.stdout }}"
+    mode: '0600'
